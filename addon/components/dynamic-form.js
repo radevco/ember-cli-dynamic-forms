@@ -92,15 +92,32 @@ const DynamicForm = Ember.Component.extend({
       let fields = Object.keys(schemaObj.schema.properties);
       let changeFn = function (control) {
         fields.forEach((field) => {
-          control.childrenByPropertyId[field].on('change', function (e) {
-            changeAction(e, field);
-          });
-          control.childrenByPropertyId[field].on('keyup', function (e) {
-            changeAction(e, field);
-          });
-          control.childrenByPropertyId[field].on('click', function (e) {
-            changeAction(e, field);
-          });
+          let question = control.childrenByPropertyId[field].schema;
+          // need to check and see if field is and object, then it has sub-fields
+          if (question.type === "object") {
+            let subFields = Object.keys(question.properties);
+            for (var i = 0; i < subFields.length; i++) {
+              control.childrenByPropertyId[field].childrenByPropertyId[subFields[i]].on('change', function (e) {
+                changeAction(e, subFields[i]);
+              });
+              control.childrenByPropertyId[field].childrenByPropertyId[subFields[i]].on('keyup', function (e) {
+                changeAction(e, subFields[i]);
+              });
+              control.childrenByPropertyId[field].childrenByPropertyId[subFields[i]].on('click', function (e) {
+                changeAction(e, subFields[i]);
+              });
+            }
+          } else {
+            control.childrenByPropertyId[field].on('change', function (e) {
+              changeAction(e, field);
+            });
+            control.childrenByPropertyId[field].on('keyup', function (e) {
+              changeAction(e, field);
+            });
+            control.childrenByPropertyId[field].on('click', function (e) {
+              changeAction(e, field);
+            });
+          }
         });
       };
       postRenderFns.push(changeFn);
